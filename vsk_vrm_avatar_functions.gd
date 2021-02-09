@@ -45,7 +45,6 @@ static func convert_vrm_instance(p_vrm_instance: Spatial, p_root: Node) -> Spati
 				vsk_avatar_root.set_owner(null)
 				
 				vsk_avatar_root.add_child(p_vrm_instance)
-				#p_vrm_instance.filename = ""
 				p_vrm_instance.set_owner(vsk_avatar_root)
 				
 				# Skeleton Path
@@ -75,6 +74,11 @@ static func convert_vrm_instance(p_vrm_instance: Spatial, p_root: Node) -> Spati
 				eye_node.rotate_y(PI)
 				eye_node.transform *= fp_global_transform
 				vsk_avatar_root.set_eye_transform_path(vsk_avatar_root.get_path_to(eye_node))
+				
+				# Use the VRM preview texture if it exists
+				if vrm_meta.texture:
+					vsk_avatar_root.editor_properties.vskeditor_preview_type = "Texture"
+					vsk_avatar_root.editor_properties.vskeditor_preview_texture = vrm_meta.texture
 				
 				p_vrm_instance.rotate_y(PI)
 			

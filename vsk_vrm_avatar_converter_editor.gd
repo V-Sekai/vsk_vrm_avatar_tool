@@ -112,7 +112,7 @@ func _ready():
 		# Save
 		save_dialog = FileDialog.new()
 		save_dialog.set_title("Save Avatar As...")
-		save_dialog.add_filter("*.%s;%s" % [vsk_avatar_definition_editor_const.OUTPUT_SCENE_EXTENSION, vsk_avatar_definition_editor_const.OUTPUT_SCENE_EXTENSION.to_upper()]);
+		save_dialog.add_filter("*.tscn, *.scn; Scenes");
 		save_dialog.mode = FileDialog.MODE_SAVE_FILE
 		save_dialog.access = FileDialog.ACCESS_FILESYSTEM
 		save_dialog.connect("file_selected", self, "_save_file_at_path")

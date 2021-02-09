@@ -1,7 +1,7 @@
 tool
 extends EditorPlugin
 
-const vrm_logo = preload("vrm_v_logo_16.png")
+const vrm_logo = null#preload("vrm_v_logo_16.png")
 const vrm_toplevel_const = preload("res://addons/vrm/vrm_toplevel.gd")
 
 const vsk_vrm_avatar_converter_editor_const = preload("vsk_vrm_avatar_converter_editor.gd")

@@ -11,6 +11,10 @@ const bone_lib_const = preload("res://addons/vsk_avatar/bone_lib.gd")
 
 const humanoid_data_const = preload("res://addons/vsk_avatar/humanoid_data.gd")
 
+const avatar_physics_const = preload("res://addons/vsk_avatar/avatar_physics.gd")
+const avatar_springbone_const = preload("res://addons/vsk_avatar/physics/avatar_springbone.gd")
+const avatar_collidergroup_const = preload("res://addons/vsk_avatar/physics/avatar_collidergroup.gd")
+
 const vsk_vrm_avatar_humanoid_const = preload("res://addons/vsk_vrm_avatar_tool/vsk_vrm_avatar_humanoid.gd")
 
 static func recursively_reassign_owner(p_instance: Node, p_owner: Node) -> void:
@@ -65,6 +69,55 @@ static func convert_vrm_instance(p_vrm_instance: Spatial, p_root: Node) -> Spati
 					fp_global_transform = node_util_const.get_relative_global_transform(vsk_avatar_root, skeleton)\
 					* bone_lib_const.get_bone_global_rest_transform(fp_bone_id, skeleton)\
 					* Transform(Basis(), eye_offset)
+					
+				# Avatar Physics
+				var secondary: Node = p_vrm_instance.get_node_or_null(p_vrm_instance.vrm_secondary)
+				
+				if secondary:
+					var avatar_physics: Spatial = Spatial.new()
+					avatar_physics.set_script(avatar_physics_const)
+					
+					vsk_avatar_root.add_child(avatar_physics)
+					avatar_physics.set_name("AvatarPhysics")
+					avatar_physics.set_owner(vsk_avatar_root)
+					
+					var collider_group_map: Dictionary = {}
+					var spring_bone_map: Dictionary = {}
+					
+					for collider_group in secondary.collider_groups:
+						var vsk_collider_group: Resource = avatar_collidergroup_const.new()
+						vsk_collider_group.skeleton_or_node = avatar_physics.get_path_to(skeleton)
+						vsk_collider_group.bone = collider_group.bone
+						vsk_collider_group.sphere_colliders = collider_group.sphere_colliders
+						collider_group_map[collider_group] = vsk_collider_group
+						
+					for spring_bone in secondary.spring_bones:
+						var vsk_spring_bone: Resource = avatar_springbone_const.new()
+						vsk_spring_bone.stiffness_force = spring_bone.stiffness_force
+						vsk_spring_bone.gravity_power = spring_bone.gravity_power
+						vsk_spring_bone.gravity_dir = spring_bone.gravity_dir
+						vsk_spring_bone.drag_force = spring_bone.drag_force
+						vsk_spring_bone.skeleton = avatar_physics.get_path_to(skeleton)
+						vsk_spring_bone.center_bone = spring_bone.center_bone
+						vsk_spring_bone.center_node = avatar_physics.get_path_to(avatar_physics)
+						vsk_spring_bone.hit_radius = spring_bone.hit_radius
+						
+						var root_bones: Array = []
+						for root_bone in spring_bone.root_bones:
+							root_bones.push_back(root_bone)
+						vsk_spring_bone.root_bones = root_bones
+						
+						var collider_groups: Array = []
+						for collider_group in spring_bone.collider_groups:
+							collider_groups.push_back(collider_group_map[collider_group])
+						vsk_spring_bone.collider_groups = collider_groups
+						
+						spring_bone_map[spring_bone] = vsk_spring_bone
+					
+					avatar_physics.collider_groups = collider_group_map.values()
+					avatar_physics.spring_bones = spring_bone_map.values()
+					
+					vsk_avatar_root.avatar_physics_path = vsk_avatar_root.get_path_to(avatar_physics)
 				
 				# Eye position
 				var eye_node: Position3D = Position3D.new()

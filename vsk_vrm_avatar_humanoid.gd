@@ -1,5 +1,5 @@
-tool
-extends Reference
+@tool
+extends RefCounted
 
 const humanoid_data_const = preload("res://addons/vsk_avatar/humanoid_data.gd")
 
@@ -68,7 +68,7 @@ const humanoid_name_mappings = {
 }
 
 static func convert_vrm_humanoid_data_to_vsk_humanoid_data(p_dictionary: Dictionary) -> HumanoidData:
-	var humanoid_data: humanoid_data_const = humanoid_data_const.new()
+	var humanoid_data: HumanoidData = humanoid_data_const.new()
 	
 	for key in humanoid_name_mappings.keys():
 		if p_dictionary.has(key):

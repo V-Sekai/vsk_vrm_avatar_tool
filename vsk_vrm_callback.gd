@@ -1,5 +1,5 @@
-extends Reference
-tool
+@tool
+extends RefCounted
 
 enum {
 	VRM_OK,
@@ -30,5 +30,5 @@ static func get_error_string(p_err: int) -> String:
 	
 	return error_string
 
-static func generic_error_check(p_root: Spatial) -> int:
+static func generic_error_check(p_root: Node3D) -> int:
 	return VRM_OK

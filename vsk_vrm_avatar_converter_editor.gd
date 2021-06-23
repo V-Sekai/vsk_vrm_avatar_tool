@@ -1,4 +1,4 @@
-tool
+@tool
 extends Node
 
 const vrm_toplevel_const = preload("res://addons/vrm/vrm_toplevel.gd")
@@ -13,7 +13,7 @@ enum {
 
 const VRM_EXTENSION = "vrm"
 
-var icon: Texture = null
+var icon: Texture2D = null
 var node: Node = null
 var options: MenuButton = null
 var editor_plugin: EditorPlugin = null
@@ -21,7 +21,7 @@ var err_dialog : AcceptDialog = null
 var save_dialog : FileDialog = null
 
 # Hack to deal with the fact that IK correction must be done in the scene tree currently
-var avatar_editor_root: Spatial = null
+var avatar_editor_root: Node3D = null
 
 func error_callback(p_err: int, p_extra_code: int) -> void:
 	if p_err != vsk_vrm_callback_const.VRM_OK:
@@ -29,7 +29,7 @@ func error_callback(p_err: int, p_extra_code: int) -> void:
 		
 		printerr(error_string + ("code: %s" % str(p_extra_code)))
 		err_dialog.set_text(error_string)
-		err_dialog.popup_centered_minsize()
+		err_dialog.popup_centered_clamped()
 		
 func _menu_option(p_id : int) -> void:
 	match p_id:
@@ -42,20 +42,30 @@ func _menu_option(p_id : int) -> void:
 func convert_vrm(p_save_path: String) -> void:
 	var err: int = -1
 	if editor_plugin:
-		var instance: Spatial = node.duplicate()
+		# Note: this seems to create a duplicate non-instanced copy. Still debugging.
+		var instance: Node3D = node.duplicate(Node.DUPLICATE_USE_INSTANCING)
+		# The following avoids the duplicate, but then it's not instanced at all.
+		#var old_owner: Node = node.get_owner()
+		#node.set_owner(null)
+		#var tmp_packed_scene: PackedScene = PackedScene.new()
+		#tmp_packed_scene.pack(node)
+		#node.set_owner(old_owner)
+		#var instance: Node3D = tmp_packed_scene.instantiate(PackedScene.GEN_EDIT_STATE_INSTANCE)
+		#tmp_packed_scene = null
+
 		if instance and instance is vrm_toplevel_const:
 			var root: Node = editor_plugin.get_editor_interface().get_edited_scene_root()
 			
-			var avatar_root: Spatial = vsk_vrm_avatar_functions_const.convert_vrm_instance(
+			var avatar_root: Node3D = vsk_vrm_avatar_functions_const.convert_vrm_instance(
 				instance, 
 				root
 			)
 			if avatar_root:
 				var packed_scene: PackedScene = PackedScene.new()
 				err = packed_scene.pack(avatar_root)
-				if err == OK:
+				if err & 0xffffffff == OK:
 					err = ResourceSaver.save(p_save_path, packed_scene)
-					if err == OK:
+					if err & 0xffffffff == OK:
 						return
 					else:
 						error_callback(vsk_vrm_callback_const.VRM_COULD_NOT_SAVE, err)
@@ -113,16 +123,16 @@ func _ready():
 		save_dialog = FileDialog.new()
 		save_dialog.set_title("Save Avatar As...")
 		save_dialog.add_filter("*.tscn, *.scn; Scenes");
-		save_dialog.mode = FileDialog.MODE_SAVE_FILE
+		save_dialog.mode = FileDialog.FILE_MODE_SAVE_FILE
 		save_dialog.access = FileDialog.ACCESS_FILESYSTEM
-		save_dialog.connect("file_selected", self, "_save_file_at_path")
-		editor_plugin.get_editor_interface().get_editor_viewport().add_child(save_dialog)
+		save_dialog.connect("file_selected", Callable(self, "_save_file_at_path"))
+		editor_plugin.get_editor_interface().get_viewport().add_child(save_dialog)
 		
 		err_dialog = AcceptDialog.new()
-		editor_plugin.get_editor_interface().get_editor_viewport().add_child(err_dialog)
+		editor_plugin.get_editor_interface().get_viewport().add_child(err_dialog)
 		
 		# Spatial
-		avatar_editor_root = Spatial.new()
+		avatar_editor_root = Node3D.new()
 		avatar_editor_root.set_name("AvatarEditorRoot")
 
 		options = MenuButton.new()
@@ -133,9 +143,9 @@ func _ready():
 		options.set_button_icon(icon)
 		options.get_popup().add_item("Convert to VSK Avatar", MENU_OPTION_CONVERT_TO_VSK_AVATAR)
 		
-		options.get_popup().connect("id_pressed", self, "_menu_option")
+		options.get_popup().connect("id_pressed", Callable(self, "_menu_option"))
 		options.hide()
 
-func _init(p_editor_plugin: EditorPlugin, p_icon: Texture):
+func _init(p_editor_plugin: EditorPlugin, p_icon: Texture2D):
 	editor_plugin = p_editor_plugin
 	icon = p_icon

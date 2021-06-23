@@ -1,4 +1,4 @@
-tool
+@tool
 extends Node
 
 const vrm_toplevel_const = preload("res://addons/vrm/vrm_toplevel.gd")
@@ -6,7 +6,7 @@ const vrm_toplevel_const = preload("res://addons/vrm/vrm_toplevel.gd")
 const vsk_avatar_definition_const = preload("res://addons/vsk_avatar/vsk_avatar_definition.gd")
 const vsk_avatar_definition_runtime_const = preload("res://addons/vsk_avatar/vsk_avatar_definition_runtime.gd")
 
-const node_util_const = preload("res://addons/gdutil/node_util.gd")
+const node_util_const = preload("res://addons/gd_util/node_util.gd")
 const bone_lib_const = preload("res://addons/vsk_avatar/bone_lib.gd")
 
 const humanoid_data_const = preload("res://addons/vsk_avatar/humanoid_data.gd")
@@ -24,25 +24,28 @@ static func recursively_reassign_owner(p_instance: Node, p_owner: Node) -> void:
 	for child in p_instance.get_children():
 		recursively_reassign_owner(child, p_owner)
 
-static func get_first_person_bone_id(p_skeleton: Skeleton, p_humanoid_data: Resource) -> int:
+static func get_first_person_bone_id(p_skeleton: Skeleton3D, p_humanoid_data: Resource) -> int:
 	if p_skeleton and p_humanoid_data is humanoid_data_const:
 		var head_name: String = p_humanoid_data.get("head_bone_name")
 		return p_skeleton.find_bone(head_name) 
 	else:
 		return -1
 
-static func convert_vrm_instance(p_vrm_instance: Spatial, p_root: Node) -> Spatial:
-	var vsk_avatar_root: Spatial = null
+static func _set_editable(p_scene: Node, p_make_editable: Node) -> void:
+	p_scene.set_editable_instance(p_make_editable, true)
+
+static func convert_vrm_instance(p_vrm_instance: Node3D, p_root: Node) -> Node3D:
+	var vsk_avatar_root: Node3D = null
 	
-	if p_vrm_instance.get_script() == vrm_toplevel_const:
+	if typeof(p_vrm_instance.get("vrm_meta")) != TYPE_NIL:
 		var vrm_meta = p_vrm_instance.vrm_meta
 		if vrm_meta:
 			var humanoid_bone_mapping: Dictionary  = vrm_meta.humanoid_bone_mapping
 			var eye_offset: Vector3  = vrm_meta.eye_offset
 			
-			var skeleton: Skeleton = p_vrm_instance.get_node_or_null(p_vrm_instance.vrm_skeleton)
+			var skeleton: Skeleton3D = p_vrm_instance.get_node_or_null(p_vrm_instance.vrm_skeleton)
 			if skeleton:
-				vsk_avatar_root = Spatial.new()
+				vsk_avatar_root = Node3D.new()
 				vsk_avatar_root.set_name("Avatar")
 				vsk_avatar_root.set_script(vsk_avatar_definition_const)
 				
@@ -50,6 +53,7 @@ static func convert_vrm_instance(p_vrm_instance: Spatial, p_root: Node) -> Spati
 				
 				vsk_avatar_root.add_child(p_vrm_instance)
 				p_vrm_instance.set_owner(vsk_avatar_root)
+				_set_editable(vsk_avatar_root, p_vrm_instance)
 				
 				# Skeleton Path
 				var skeleton_path: NodePath = vsk_avatar_root.get_path_to(skeleton)
@@ -62,19 +66,19 @@ static func convert_vrm_instance(p_vrm_instance: Spatial, p_root: Node) -> Spati
 				# Humanoid Data
 				vsk_avatar_root.set_humanoid_data(humanoid_data)
 				
-				var fp_global_transform: Transform = Transform()
+				var fp_global_transform: Transform3D = Transform3D()
 				
 				var fp_bone_id: int = get_first_person_bone_id(skeleton, humanoid_data)
 				if fp_bone_id != -1:
 					fp_global_transform = node_util_const.get_relative_global_transform(vsk_avatar_root, skeleton)\
 					* bone_lib_const.get_bone_global_rest_transform(fp_bone_id, skeleton)\
-					* Transform(Basis(), eye_offset)
+					* Transform3D(Basis(), eye_offset)
 					
 				# Avatar Physics
 				var secondary: Node = p_vrm_instance.get_node_or_null(p_vrm_instance.vrm_secondary)
 				
 				if secondary:
-					var avatar_physics: Spatial = Spatial.new()
+					var avatar_physics: Node3D = Node3D.new()
 					avatar_physics.set_script(avatar_physics_const)
 					
 					vsk_avatar_root.add_child(avatar_physics)
@@ -130,7 +134,7 @@ static func convert_vrm_instance(p_vrm_instance: Spatial, p_root: Node) -> Spati
 				
 				# Use the VRM preview texture if it exists
 				if vrm_meta.texture:
-					vsk_avatar_root.editor_properties.vskeditor_preview_type = "Texture"
+					vsk_avatar_root.editor_properties.vskeditor_preview_type = "Texture2D"
 					vsk_avatar_root.editor_properties.vskeditor_preview_texture = vrm_meta.texture
 				
 				p_vrm_instance.rotate_y(PI)

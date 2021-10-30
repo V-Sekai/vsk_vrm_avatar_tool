@@ -39,32 +39,32 @@ func _menu_option(p_id : int) -> void:
 				
 	error_callback(vsk_vrm_callback_const.VRM_INVALID_MENU_OPTION, -1)
 
+func set_owner_rec(node: Node, owner: Node):
+	node.owner = owner
+	for n in node.get_children():
+		set_owner_rec(n, owner)
+
 func convert_vrm(p_save_path: String) -> void:
 	var err: int = -1
 	if editor_plugin:
-		# Note: this seems to create a duplicate non-instanced copy. Still debugging.
-		var instance: Node3D = node.duplicate(Node.DUPLICATE_USE_INSTANCING)
-		# The following avoids the duplicate, but then it's not instanced at all.
-		#var old_owner: Node = node.get_owner()
-		#node.set_owner(null)
-		#var tmp_packed_scene: PackedScene = PackedScene.new()
-		#tmp_packed_scene.pack(node)
-		#node.set_owner(old_owner)
-		#var instance: Node3D = tmp_packed_scene.instantiate(PackedScene.GEN_EDIT_STATE_INSTANCE)
-		#tmp_packed_scene = null
-
-		if instance and instance is vrm_toplevel_const:
-			var root: Node = editor_plugin.get_editor_interface().get_edited_scene_root()
-			
-			var avatar_root: Node3D = vsk_vrm_avatar_functions_const.convert_vrm_instance(
-				instance, 
-				root
-			)
+		var instance: Node3D = node.duplicate()
+		instance.scene_file_path = node.scene_file_path
+		if instance and typeof(instance.get(^"vrm_meta")) != TYPE_NIL:
+			instance.vrm_meta.texture = null
+			var avatar_root: Node3D = vsk_vrm_avatar_functions_const.convert_vrm_instance(instance)
 			if avatar_root:
+				avatar_root.set_owner(null)
+				for n in avatar_root.get_children():
+					set_owner_rec(n, avatar_root)
+				if (!instance.scene_file_path.is_empty()):
+					for n in instance.get_children():
+						set_owner_rec(n, instance)
 				var packed_scene: PackedScene = PackedScene.new()
 				err = packed_scene.pack(avatar_root)
 				if err & 0xffffffff == OK:
 					err = ResourceSaver.save(p_save_path, packed_scene)
+					var editor_filesystem = EditorPlugin.new().get_editor_interface().get_resource_filesystem()
+					editor_filesystem.scan()
 					if err & 0xffffffff == OK:
 						return
 					else:

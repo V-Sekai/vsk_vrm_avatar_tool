@@ -31,10 +31,7 @@ static func get_first_person_bone_id(p_skeleton: Skeleton3D, p_humanoid_data: Re
 	else:
 		return -1
 
-static func _set_editable(p_scene: Node, p_make_editable: Node) -> void:
-	p_scene.set_editable_instance(p_make_editable, true)
-
-static func convert_vrm_instance(p_vrm_instance: Node3D, p_root: Node) -> Node3D:
+static func convert_vrm_instance(p_vrm_instance: Node3D) -> Node3D:
 	var vsk_avatar_root: Node3D = null
 	
 	if typeof(p_vrm_instance.get("vrm_meta")) != TYPE_NIL:
@@ -53,7 +50,7 @@ static func convert_vrm_instance(p_vrm_instance: Node3D, p_root: Node) -> Node3D
 				
 				vsk_avatar_root.add_child(p_vrm_instance)
 				p_vrm_instance.set_owner(vsk_avatar_root)
-				_set_editable(vsk_avatar_root, p_vrm_instance)
+				vsk_avatar_root.set_editable_instance(p_vrm_instance, true)
 				
 				# Skeleton Path
 				var skeleton_path: NodePath = vsk_avatar_root.get_path_to(skeleton)

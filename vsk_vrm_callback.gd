@@ -13,22 +13,22 @@ enum {
 }
 
 static func get_error_string(p_err: int) -> String:
-	var error_string: String = "Unknown error!"
+	var error_str: String = "Unknown error!"
 	match p_err:
 		VRM_FAILED:
-			error_string = "Generic VRM error! (complain to Saracen)"
+			error_str = "Generic VRM error! (complain to Saracen)"
 		VRM_INVALID_MENU_OPTION:
-			error_string = "Invalid menu option"
+			error_str = "Invalid menu option"
 		VRM_COULD_NOT_SAVE:
-			error_string = "Could not be saved"
+			error_str = "Could not be saved"
 		VRM_COULD_NOT_PACK:
-			error_string = "Could not be packed"
+			error_str = "Could not be packed"
 		VRM_INVALID_NODE:
-			error_string = "Invalid node"
+			error_str = "Invalid node"
 		VRM_NO_EDITOR_PLUGIN:
-			error_string = "No editor plugin found"
+			error_str = "No editor plugin found"
 	
-	return error_string
+	return error_str
 
 static func generic_error_check(p_root: Node3D) -> int:
 	return VRM_OK

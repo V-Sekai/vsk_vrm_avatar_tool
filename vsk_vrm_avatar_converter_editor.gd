@@ -25,10 +25,10 @@ var avatar_editor_root: Node3D = null
 
 func error_callback(p_err: int, p_extra_code: int) -> void:
 	if p_err != vsk_vrm_callback_const.VRM_OK:
-		var error_string: String = vsk_vrm_callback_const.get_error_string(p_err)
+		var error_str: String = vsk_vrm_callback_const.get_error_string(p_err)
 		
-		printerr(error_string + ("code: %s" % str(p_extra_code)))
-		err_dialog.set_text(error_string)
+		printerr(error_str + ("code: %s" % str(p_extra_code)))
+		err_dialog.set_text(error_str)
 		err_dialog.popup_centered_clamped()
 		
 func _menu_option(p_id : int) -> void:

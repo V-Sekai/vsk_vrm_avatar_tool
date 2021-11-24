@@ -122,7 +122,7 @@ func _ready():
 		# Save
 		save_dialog = FileDialog.new()
 		save_dialog.set_title("Save Avatar As...")
-		save_dialog.add_filter("*.tscn, *.scn; Scenes");
+		save_dialog.add_filter("*.scn; Scenes");
 		save_dialog.mode = FileDialog.FILE_MODE_SAVE_FILE
 		save_dialog.access = FileDialog.ACCESS_FILESYSTEM
 		save_dialog.connect("file_selected", Callable(self, "_save_file_at_path"))

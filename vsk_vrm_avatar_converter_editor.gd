@@ -62,7 +62,7 @@ func convert_vrm(p_save_path: String) -> void:
 				var packed_scene: PackedScene = PackedScene.new()
 				err = packed_scene.pack(avatar_root)
 				if err & 0xffffffff == OK:
-					err = ResourceSaver.save(p_save_path, packed_scene, ResourceSaver.FLAG_COMPRESS)
+					err = ResourceSaver.save(p_save_path, packed_scene)
 					var editor_filesystem = EditorPlugin.new().get_editor_interface().get_resource_filesystem()
 					editor_filesystem.scan()
 					if err & 0xffffffff == OK:

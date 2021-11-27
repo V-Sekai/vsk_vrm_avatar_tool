@@ -93,6 +93,7 @@ func _is_valid_vrm_file(p_path: String) -> bool:
 
 func save_vrm_selection_dialog() -> void:
 	if save_dialog:
+		save_dialog.current_file = str(node.name) + ".scn"
 		save_dialog.popup_centered_ratio()
 
 
@@ -116,6 +117,7 @@ func _notification(what):
 
 func edit(p_node: Node) -> void:
 	node = p_node
+
 
 func _ready():
 	if editor_plugin:

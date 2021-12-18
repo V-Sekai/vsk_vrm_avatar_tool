@@ -97,20 +97,18 @@ func save_vrm_selection_dialog() -> void:
 		save_dialog.popup_centered_ratio()
 
 
-func _notification(what):
-	match what:
-		NOTIFICATION_PREDELETE:
-			if save_dialog and not save_dialog.is_queued_for_deletion():
-				save_dialog.queue_free()
-				
-			if err_dialog and not err_dialog.is_queued_for_deletion():
-				err_dialog.queue_free()
-				
-			if avatar_editor_root and not avatar_editor_root.is_queued_for_deletion():
-				avatar_editor_root.queue_free()
-				
-			if editor_plugin:
-				editor_plugin.remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, options)
+func _exit_tree():
+	if save_dialog and not save_dialog.is_queued_for_deletion():
+		save_dialog.queue_free()
+		
+	if err_dialog and not err_dialog.is_queued_for_deletion():
+		err_dialog.queue_free()
+		
+	if avatar_editor_root and not avatar_editor_root.is_queued_for_deletion():
+		avatar_editor_root.queue_free()
+		
+	if editor_plugin:
+		editor_plugin.remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, options)
 
 func edit(p_node: Node) -> void:
 	node = p_node

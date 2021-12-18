@@ -100,13 +100,13 @@ func save_vrm_selection_dialog() -> void:
 func _notification(what):
 	match what:
 		NOTIFICATION_PREDELETE:
-			if save_dialog:
+			if save_dialog and not save_dialog.is_queued_for_deletion():
 				save_dialog.queue_free()
 				
-			if err_dialog:
+			if err_dialog and not err_dialog.is_queued_for_deletion():
 				err_dialog.queue_free()
 				
-			if avatar_editor_root:
+			if avatar_editor_root and not avatar_editor_root.is_queued_for_deletion():
 				avatar_editor_root.queue_free()
 				
 			if editor_plugin:

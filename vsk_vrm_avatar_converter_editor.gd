@@ -102,15 +102,12 @@ func _notification(what):
 		NOTIFICATION_PREDELETE:
 			if save_dialog:
 				save_dialog.queue_free()
-				save_dialog = null
 				
 			if err_dialog:
 				err_dialog.queue_free()
-				err_dialog = null
 				
 			if avatar_editor_root:
 				avatar_editor_root.queue_free()
-				avatar_editor_root = null
 				
 			if editor_plugin:
 				editor_plugin.remove_control_from_container(EditorPlugin.CONTAINER_SPATIAL_EDITOR_MENU, options)

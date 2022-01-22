@@ -48,7 +48,7 @@ static func convert_vrm_instance(p_vrm_instance: Node3D) -> Node3D:
 				
 				vsk_avatar_root.set_owner(null)
 				
-				vsk_avatar_root.add_child(p_vrm_instance)
+				vsk_avatar_root.add_child(p_vrm_instance, true)
 				p_vrm_instance.set_owner(vsk_avatar_root)
 				vsk_avatar_root.set_editable_instance(p_vrm_instance, true)
 				
@@ -78,7 +78,7 @@ static func convert_vrm_instance(p_vrm_instance: Node3D) -> Node3D:
 					var avatar_physics: Node3D = Node3D.new()
 					avatar_physics.set_script(avatar_physics_const)
 					
-					vsk_avatar_root.add_child(avatar_physics)
+					vsk_avatar_root.add_child(avatar_physics, true)
 					avatar_physics.set_name("AvatarPhysics")
 					avatar_physics.set_owner(vsk_avatar_root)
 					
@@ -122,7 +122,7 @@ static func convert_vrm_instance(p_vrm_instance: Node3D) -> Node3D:
 				
 				# Eye position
 				var eye_node: Position3D = Position3D.new()
-				vsk_avatar_root.add_child(eye_node)
+				vsk_avatar_root.add_child(eye_node, true)
 				eye_node.set_name("EyePosition")
 				eye_node.set_owner(vsk_avatar_root)
 				eye_node.rotate_y(PI)

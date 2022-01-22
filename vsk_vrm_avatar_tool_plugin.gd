@@ -26,7 +26,7 @@ func _get_plugin_name() -> String:
 func _enter_tree() -> void:
 	vsk_vrm_avatar_converter_editor = vsk_vrm_avatar_converter_editor_const.new(self, vrm_logo)
 	
-	call_deferred("add_child", vsk_vrm_avatar_converter_editor)
+	call_deferred("add_child", vsk_vrm_avatar_converter_editor, true)
 
 
 func _exit_tree() -> void:

@@ -123,10 +123,10 @@ func _ready():
 		save_dialog.mode = FileDialog.FILE_MODE_SAVE_FILE
 		save_dialog.access = FileDialog.ACCESS_FILESYSTEM
 		save_dialog.connect("file_selected", Callable(self, "_save_file_at_path"))
-		editor_plugin.get_editor_interface().get_viewport().add_child(save_dialog)
+		editor_plugin.get_editor_interface().get_viewport().add_child(save_dialog, true)
 		
 		err_dialog = AcceptDialog.new()
-		editor_plugin.get_editor_interface().get_viewport().add_child(err_dialog)
+		editor_plugin.get_editor_interface().get_viewport().add_child(err_dialog, true)
 		
 		# Spatial
 		avatar_editor_root = Node3D.new()

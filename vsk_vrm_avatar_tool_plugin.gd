@@ -52,12 +52,12 @@ func _exit_tree() -> void:
 			vsk_vrm_avatar_converter_editor.get_parent().remove_child(vsk_vrm_avatar_converter_editor)
 		vsk_vrm_avatar_converter_editor.queue_free()
 
-func _edit(p_object : Object) -> void:
+func _edit(p_object : Variant) -> void:
 	if p_object is Node and typeof(p_object.get("vrm_meta")) != TYPE_NIL:
 		if vsk_vrm_avatar_converter_editor:
 			vsk_vrm_avatar_converter_editor.edit(p_object)
 
-func _handles(p_object : Object) -> bool:
+func _handles(p_object : Variant) -> bool:
 	if p_object.get_script() == vrm_toplevel_const:
 		return true
 	else:

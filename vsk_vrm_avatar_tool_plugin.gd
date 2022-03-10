@@ -37,7 +37,7 @@ func _enter_tree() -> void:
 	option_button.set_button_icon(vrm_logo)
 	option_button.get_popup().add_item("Convert to VSK Avatar", vsk_vrm_avatar_converter_editor_const.MENU_OPTION_CONVERT_TO_VSK_AVATAR)
 	
-	option_button.get_popup().connect("id_pressed", Callable(self, "_menu_option"))
+	option_button.get_popup().id_pressed.connect(self._menu_option)
 	option_button.hide()
 
 func _exit_tree() -> void:

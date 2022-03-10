@@ -105,7 +105,7 @@ func setup_dialogs() -> void:
 	save_dialog.add_filter("*.scn; Scenes");
 	save_dialog.mode = FileDialog.FILE_MODE_SAVE_FILE
 	save_dialog.access = FileDialog.ACCESS_FILESYSTEM
-	save_dialog.connect("file_selected", Callable(self, "_save_file_at_path"))
+	save_dialog.file_selected.connect(self._save_file_at_path)
 	editor_plugin.get_editor_interface().get_base_control().add_child(save_dialog)
 	
 func teardown_dialogs() -> void:

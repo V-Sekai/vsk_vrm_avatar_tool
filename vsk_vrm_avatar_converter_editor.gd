@@ -46,7 +46,7 @@ func convert_vrm(p_save_path: String) -> void:
 	if editor_plugin:
 		var instance: Node3D = node.duplicate()
 		instance.scene_file_path = node.scene_file_path
-		if instance and typeof(instance.get(^"vrm_meta")) != TYPE_NIL:
+		if instance and typeof(instance.get(&"vrm_meta")) != TYPE_NIL:
 			instance.vrm_meta.texture = null
 			var avatar_root: Node3D = vsk_vrm_avatar_functions_const.convert_vrm_instance(instance)
 			if avatar_root:

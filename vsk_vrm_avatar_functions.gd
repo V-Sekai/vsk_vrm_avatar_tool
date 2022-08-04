@@ -9,13 +9,9 @@ const vsk_avatar_definition_runtime_const = preload("res://addons/vsk_avatar/vsk
 const node_util_const = preload("res://addons/gd_util/node_util.gd")
 const bone_lib_const = preload("res://addons/vsk_avatar/bone_lib.gd")
 
-const humanoid_data_const = preload("res://addons/vsk_avatar/humanoid_data.gd")
-
 const avatar_physics_const = preload("res://addons/vsk_avatar/avatar_physics.gd")
 const avatar_springbone_const = preload("res://addons/vsk_avatar/physics/avatar_springbone.gd")
 const avatar_collidergroup_const = preload("res://addons/vsk_avatar/physics/avatar_collidergroup.gd")
-
-const vsk_vrm_avatar_humanoid_const = preload("res://addons/vsk_vrm_avatar_tool/vsk_vrm_avatar_humanoid.gd")
 
 static func recursively_reassign_owner(p_instance: Node, p_owner: Node) -> void:
 	if p_instance != p_owner:
@@ -24,12 +20,21 @@ static func recursively_reassign_owner(p_instance: Node, p_owner: Node) -> void:
 	for child in p_instance.get_children():
 		recursively_reassign_owner(child, p_owner)
 
-static func get_first_person_bone_id(p_skeleton: Skeleton3D, p_humanoid_data: Resource) -> int:
-	if p_skeleton and p_humanoid_data is humanoid_data_const:
-		var head_name: String = p_humanoid_data.get("head_bone_name")
-		return p_skeleton.find_bone(head_name) 
+static func get_first_person_bone_id(p_skeleton: Skeleton3D) -> int:
+	if p_skeleton:
+		return p_skeleton.find_bone("Head")
 	else:
 		return -1
+
+static func get_fallback_eye_offset(p_skeleton: Skeleton3D, eye_offset: Vector3) -> Vector3:
+	if p_skeleton:
+		var left_eye = p_skeleton.find_bone("LeftEye")
+		var right_eye = p_skeleton.find_bone("RightEye")
+		if left_eye != -1 and right_eye != -1:
+			var interp: Vector3 = p_skeleton.get_bone_global_rest(left_eye).origin.lerp(p_skeleton.get_bone_global_rest(right_eye).origin, 0.5)
+			interp.z += 0.5 * interp.distance_to(eye_offset)
+			return interp
+	return eye_offset
 
 static func convert_vrm_instance(p_vrm_instance: Node3D) -> Node3D:
 	var vsk_avatar_root: Node3D = null
@@ -37,10 +42,8 @@ static func convert_vrm_instance(p_vrm_instance: Node3D) -> Node3D:
 	if typeof(p_vrm_instance.get("vrm_meta")) != TYPE_NIL:
 		var vrm_meta = p_vrm_instance.vrm_meta
 		if vrm_meta:
-			var humanoid_bone_mapping: Dictionary  = vrm_meta.humanoid_bone_mapping
 			var eye_offset: Vector3  = vrm_meta.eye_offset
-			
-			var skeleton: Skeleton3D = p_vrm_instance.get_node_or_null(p_vrm_instance.vrm_skeleton)
+			var skeleton: Skeleton3D = p_vrm_instance.find_child("GeneralSkeleton", true, false)
 			if skeleton:
 				vsk_avatar_root = Node3D.new()
 				vsk_avatar_root.set_name("Avatar")
@@ -57,20 +60,21 @@ static func convert_vrm_instance(p_vrm_instance: Node3D) -> Node3D:
 				
 				vsk_avatar_root.set_skeleton_path(skeleton_path)
 				
-				var humanoid_data: Resource = vsk_vrm_avatar_humanoid_const.convert_vrm_humanoid_data_to_vsk_humanoid_data(\
-				humanoid_bone_mapping)
+				var fp_global_position: Vector3 = Vector3.ZERO
+				var head_global_position: Vector3 = Vector3.ZERO
 				
-				# Humanoid Data
-				vsk_avatar_root.set_humanoid_data(humanoid_data)
-				
-				var fp_global_transform: Transform3D = Transform3D()
-				
-				var fp_bone_id: int = get_first_person_bone_id(skeleton, humanoid_data)
+				var fp_bone_id: int = get_first_person_bone_id(skeleton)
 				if fp_bone_id != -1:
-					fp_global_transform = node_util_const.get_relative_global_transform(vsk_avatar_root, skeleton)\
-					* bone_lib_const.get_bone_global_rest_transform(fp_bone_id, skeleton)\
-					* Transform3D(Basis(), eye_offset)
-					
+					head_global_position = bone_lib_const.get_bone_global_rest_transform(fp_bone_id, skeleton).origin
+					fp_global_position = (bone_lib_const.get_bone_global_rest_transform(fp_bone_id, skeleton)\
+					* Transform3D(Basis(), eye_offset)).origin
+				
+				if eye_offset.is_equal_approx(Vector3.ZERO):
+					fp_global_position = get_fallback_eye_offset(skeleton, fp_global_position)
+
+				fp_global_position = node_util_const.get_relative_global_transform(vsk_avatar_root, skeleton) * fp_global_position
+				head_global_position = node_util_const.get_relative_global_transform(vsk_avatar_root, skeleton) * head_global_position
+				
 				# Avatar Physics
 				var secondary: Node = p_vrm_instance.get_node_or_null(p_vrm_instance.vrm_secondary)
 				
@@ -125,16 +129,24 @@ static func convert_vrm_instance(p_vrm_instance: Node3D) -> Node3D:
 				vsk_avatar_root.add_child(eye_node, true)
 				eye_node.set_name("EyePosition")
 				eye_node.set_owner(vsk_avatar_root)
-				eye_node.rotate_y(PI)
-				eye_node.transform *= fp_global_transform
+				eye_node.transform *= Transform3D(Basis.IDENTITY, fp_global_position)
 				vsk_avatar_root.set_eye_transform_path(vsk_avatar_root.get_path_to(eye_node))
+				
+				# Approx Mouth position
+				var mouth_node: Position3D = Position3D.new()
+				vsk_avatar_root.add_child(mouth_node, true)
+				mouth_node.set_name("MouthPosition")
+				mouth_node.set_owner(vsk_avatar_root)
+				# quarter of the way between head (throat) and eyes? Maybe should be adjustable.
+				mouth_node.transform *= Transform3D(Basis.IDENTITY, head_global_position.lerp(fp_global_position, 0.25))
+				vsk_avatar_root.set_mouth_transform_path(vsk_avatar_root.get_path_to(mouth_node))
 				
 				# Use the VRM preview texture if it exists
 				if vrm_meta.texture:
 					vsk_avatar_root.editor_properties.vskeditor_preview_type = "Texture2D"
 					vsk_avatar_root.editor_properties.vskeditor_preview_texture = vrm_meta.texture
 				
-				p_vrm_instance.rotate_y(PI)
+				p_vrm_instance.rotate_y(PI) # FIXME: This should be done during VRM import
 			
 			
 	return vsk_avatar_root

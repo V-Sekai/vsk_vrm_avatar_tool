@@ -145,8 +145,6 @@ static func convert_vrm_instance(p_vrm_instance: Node3D) -> Node3D:
 				if vrm_meta.texture:
 					vsk_avatar_root.editor_properties.vskeditor_preview_type = "Texture2D"
 					vsk_avatar_root.editor_properties.vskeditor_preview_texture = vrm_meta.texture
-				
-				p_vrm_instance.rotate_y(PI) # FIXME: This should be done during VRM import
 			
 			
 	return vsk_avatar_root

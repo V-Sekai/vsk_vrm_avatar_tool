@@ -125,7 +125,7 @@ static func convert_vrm_instance(p_vrm_instance: Node3D) -> Node3D:
 					vsk_avatar_root.avatar_physics_path = vsk_avatar_root.get_path_to(avatar_physics)
 				
 				# Eye position
-				var eye_node: Position3D = Position3D.new()
+				var eye_node: Marker3D = Marker3D.new()
 				vsk_avatar_root.add_child(eye_node, true)
 				eye_node.set_name("EyePosition")
 				eye_node.set_owner(vsk_avatar_root)
@@ -133,7 +133,7 @@ static func convert_vrm_instance(p_vrm_instance: Node3D) -> Node3D:
 				vsk_avatar_root.set_eye_transform_path(vsk_avatar_root.get_path_to(eye_node))
 				
 				# Approx Mouth position
-				var mouth_node: Position3D = Position3D.new()
+				var mouth_node: Marker3D = Marker3D.new()
 				vsk_avatar_root.add_child(mouth_node, true)
 				mouth_node.set_name("MouthPosition")
 				mouth_node.set_owner(vsk_avatar_root)

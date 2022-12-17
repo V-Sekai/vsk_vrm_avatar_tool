@@ -1,16 +1,8 @@
 @tool
 extends RefCounted
 
-enum {
-	VRM_OK,
-	VRM_FAILED,
-	VRM_INVALID_MENU_OPTION,
-	VRM_COULD_NOT_SAVE,
-	VRM_COULD_NOT_PACK,
-	VRM_INVALID_NODE,
-	VRM_NO_EDITOR_PLUGIN
-	
-}
+enum { VRM_OK, VRM_FAILED, VRM_INVALID_MENU_OPTION, VRM_COULD_NOT_SAVE, VRM_COULD_NOT_PACK, VRM_INVALID_NODE, VRM_NO_EDITOR_PLUGIN }
+
 
 static func get_error_string(p_err: int) -> String:
 	var error_str: String = "Unknown error!"
@@ -27,8 +19,9 @@ static func get_error_string(p_err: int) -> String:
 			error_str = "Invalid node"
 		VRM_NO_EDITOR_PLUGIN:
 			error_str = "No editor plugin found"
-	
+
 	return error_str
+
 
 static func generic_error_check(p_root: Node3D) -> int:
 	return VRM_OK

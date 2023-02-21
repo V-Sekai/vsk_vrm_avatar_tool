@@ -61,13 +61,13 @@ func _exit_tree() -> void:
 		vsk_vrm_avatar_converter_editor.queue_free()
 
 
-func _edit(p_object: Variant) -> void:
+func _edit(p_object: Object) -> void:
 	if p_object is Node and typeof(p_object.get("vrm_meta")) != TYPE_NIL:
 		if vsk_vrm_avatar_converter_editor:
 			vsk_vrm_avatar_converter_editor.edit(p_object)
 
 
-func _handles(p_object: Variant) -> bool:
+func _handles(p_object: Object) -> bool:
 	if p_object != null and p_object.get_script() == vrm_toplevel_const:
 		return true
 	else:

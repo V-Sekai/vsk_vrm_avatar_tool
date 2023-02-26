@@ -42,39 +42,32 @@ func set_owner_rec(node: Node, owner: Node):
 
 func convert_vrm(p_save_path: String) -> void:
 	var err: int = -1
-	if editor_plugin:
-		var instance: Node3D = node.duplicate()
-		instance.scene_file_path = node.scene_file_path
-		if instance and typeof(instance.get(&"vrm_meta")) != TYPE_NIL:
-			instance.vrm_meta.texture = null
-			var avatar_root: Node3D = vsk_vrm_avatar_functions_const.convert_vrm_instance(instance)
-			if avatar_root:
-				avatar_root.set_owner(null)
-				for n in avatar_root.get_children():
-					set_owner_rec(n, avatar_root)
-				if !instance.scene_file_path.is_empty():
-					for n in instance.get_children():
-						set_owner_rec(n, instance)
-				var packed_scene: PackedScene = PackedScene.new()
-				err = packed_scene.pack(avatar_root)
-				if err & 0xffffffff == OK:
-					err = ResourceSaver.save(packed_scene, p_save_path)
-					var editor_filesystem = EditorPlugin.new().get_editor_interface().get_resource_filesystem()
-					editor_filesystem.scan()
-					if err & 0xffffffff == OK:
-						return
-					else:
-						error_callback(vsk_vrm_callback_const.VRM_COULD_NOT_SAVE, err)
-				else:
-					error_callback(vsk_vrm_callback_const.VRM_COULD_NOT_PACK, err)
-
-				avatar_root.queue_free()
-			else:
-				error_callback(vsk_vrm_callback_const.VRM_FAILED, err)
-		else:
-			error_callback(vsk_vrm_callback_const.VRM_INVALID_NODE, err)
-	else:
+	if not editor_plugin:
 		error_callback(vsk_vrm_callback_const.VRM_NO_EDITOR_PLUGIN, err)
+	var instance: Node3D = node.duplicate()
+	instance.scene_file_path = node.scene_file_path
+	if not (instance and typeof(instance.get(&"vrm_meta")) != TYPE_NIL):		
+		error_callback(vsk_vrm_callback_const.VRM_INVALID_NODE, err)
+	instance.vrm_meta.texture = null
+	var avatar_root: Node3D = vsk_vrm_avatar_functions_const.convert_vrm_instance(instance)
+	if not avatar_root:
+		error_callback(vsk_vrm_callback_const.VRM_FAILED, err)
+	avatar_root.set_owner(null)
+	for n in avatar_root.get_children():
+		set_owner_rec(n, avatar_root)
+	if !instance.scene_file_path.is_empty():
+		for n in instance.get_children():
+			set_owner_rec(n, instance)
+	var packed_scene: PackedScene = PackedScene.new()
+	err = packed_scene.pack(avatar_root)
+	avatar_root.queue_free()
+	if err & 0xffffffff != OK:
+		error_callback(vsk_vrm_callback_const.VRM_COULD_NOT_PACK, err)
+	err = ResourceSaver.save(packed_scene, p_save_path)
+	var editor_filesystem = EditorPlugin.new().get_editor_interface().get_resource_filesystem()
+	editor_filesystem.scan()
+	if err & 0xffffffff != OK:
+		error_callback(vsk_vrm_callback_const.VRM_COULD_NOT_SAVE, err)
 
 
 func _save_file_at_path(p_path: String) -> void:

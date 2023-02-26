@@ -15,9 +15,6 @@ var editor_plugin: EditorPlugin = null
 var err_dialog: AcceptDialog = null
 var save_dialog: FileDialog = null
 
-# Hack to deal with the fact that IK correction must be done in the scene tree currently
-var avatar_editor_root: Node3D = null
-
 
 func error_callback(p_err: int, p_extra_code: int) -> void:
 	if p_err != vsk_vrm_callback_const.VRM_OK:
@@ -129,15 +126,9 @@ func teardown_dialogs() -> void:
 func _enter_tree():
 	setup_dialogs()
 
-	avatar_editor_root = Node3D.new()
-	avatar_editor_root.set_name("AvatarEditorRoot")
-
 
 func _exit_tree():
 	teardown_dialogs()
-
-	if avatar_editor_root:
-		avatar_editor_root.queue_free()
 
 
 func _init(p_editor_plugin: EditorPlugin):
